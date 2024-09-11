@@ -21,9 +21,9 @@ def handle_missing_values(df, method='drop'):
     if method == 'drop':
         df = df.dropna()
     elif method == 'ffill':
-        df = df.fillna(method='ffill')  # Forward fill
+        df = df.fillna(method='ffill') 
     elif method == 'bfill':
-        df = df.fillna(method='bfill')  # Backward fill
+        df = df.fillna(method='bfill')
     elif method == 'mean':
         df = df.fillna(df.mean())
     elif method == 'median':
@@ -46,7 +46,6 @@ def detect_and_handle_outliers(df, method='remove'):
         elif method == 'cap':
             df[col] = np.clip(df[col], lower_bound, upper_bound)  # Limit outliers to bounds
 
-    # Ensure 'Close' is between 'Low' and 'High' after capping
     df['Close'] = df[['Close', 'Low', 'High']].apply(lambda x: min(max(x['Close'], x['Low']), x['High']), axis=1)
     
     return df
@@ -59,7 +58,6 @@ def standardize_data(df):
         if col not in df.columns:
             raise ValueError(f"Missing column: {col}")
     
-    # Convert 'Date' to datetime and numeric columns to floats
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df = df.dropna(subset=['Date'])
     for col in ['Open', 'High', 'Low', 'Close']:
@@ -72,12 +70,12 @@ def check_data_quality(df):
     """Checks the data for missing values, outliers, and inconsistencies."""
     issues = []
     
-    # Check for missing values
+# Check for missing values
     missing_values = df.isnull().sum()
     if missing_values.any():
         issues.append(f"Missing values:\n{missing_values[missing_values > 0]}")
     
-    # Check for outliers
+# Check for outliers
     for col in ['Open', 'High', 'Low', 'Close']:
         Q1 = df[col].quantile(0.25)
         Q3 = df[col].quantile(0.75)
@@ -88,7 +86,7 @@ def check_data_quality(df):
         if outliers.any():
             issues.append(f"Outliers in {col}: {df.loc[outliers, ['Date', col]]}")
     
-    # Check for date inconsistencies
+# Check for date inconsistencies
     if df['Date'].isnull().any():
         issues.append("Null values in 'Date'.")
     
@@ -110,7 +108,7 @@ def create_connection(db_file):
 
 # Create Table in SQLite
 def create_table(conn):
-    """Creates an OHLC table in the SQLite database."""
+"""Creates an OHLC table in the SQLite database."""
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS ohlc_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -169,21 +167,21 @@ def run_pipeline(file_path, db_file, year, month):
     df = detect_and_handle_outliers(df)
     df = standardize_data(df)
     
-    # Check data quality
+# Check data quality
     check_data_quality(df)
     
-    # Connect to SQLite and create table
+# Connect to SQLite and create table
     conn = create_connection(db_file)
     create_table(conn)
     
-    # Insert data
+# Insert data
     insert_data(conn, df)
     
-    # Query data for a specific year and month
+# Query data for a specific year and month
     queried_df = query_data(conn, year, month)
     print(queried_df)
     
-    # Close the connection
+# Close the connection
     if conn:
         conn.close()
 
@@ -207,7 +205,7 @@ class TestDataPipeline(unittest.TestCase):
             'Close': [105, 110, 115, 125, 130],
             'Volume': [1000, 1100, 1200, 1300, 1400]
         })
-
+#5tests..
     def test_ingest_data(self):
         # Test data ingestion
         self.assertIsInstance(self.df, pd.DataFrame)
@@ -239,5 +237,6 @@ class TestDataPipeline(unittest.TestCase):
             check_data_quality(self.df)
         except ValueError as e:
             self.fail(f"Data quality check failed: {e}")
+#printing the output..
 if __name__ == "__main__":
     unittest.main()
